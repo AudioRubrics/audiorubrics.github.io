@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reinforcement Learning with Evolving Rubrics as Rewards for Audio Reasoning</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link rel="stylesheet" href="website/css/style.css">
+  <link rel="stylesheet" href="website/css/index.css">
+
+  <!-- MathJax -->
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* Override the template's grayish text color */
+    p, span, li, td, th { color: #1a1a1a; }
+    /* The template's "* { font-weight: 400 }" flattens <b>/<strong>; restore them */
+    b, strong, b span, strong span { font-weight: 700 !important; }
+    .figure-caption { font-size: 0.95rem; color: #555 !important; }
+    .figure-caption b, .figure-caption span { color: #555; }
+    /* Keep button labels white on the dark buttons */
+    .button.is-dark, .button.is-dark span, .button.is-dark .icon { color: #f5f5f5 !important; }
+
+    .ours {
+      font-variant: small-caps;
+      font-weight: bold;
+      color: #0f6b8c;
+    }
+
+    /* ---------- Tables ---------- */
+    .table-card {
+      overflow-x: auto;
+      border: 1px solid #e4e8eb;
+      border-radius: 14px;
+      box-shadow: 0 2px 14px rgba(15, 107, 140, 0.08);
+      background: #fff;
+    }
+    table.result-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.96em;
+      margin: 0;
+    }
+    table.result-table th, table.result-table td {
+      padding: 11px 14px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    table.result-table thead th {
+      background: #eef5f8;
+      border-bottom: 2px solid #cfe2ea;
+      font-weight: 700;
+      color: #0f4c63;
+    }
+    table.result-table tbody tr td:first-child,
+    table.result-table thead th:first-child { text-align: left; }
+    table.result-table tbody td { border-bottom: 1px solid #f1f3f4; }
+    table.result-table tbody tr:last-child td { border-bottom: none; }
+    table.result-table tbody tr:hover:not(.ours-row):not(.section-label) { background: #fafcfd; }
+    table.result-table .section-label td {
+      background: #f7f9fa;
+      font-style: italic;
+      color: #6a7680;
+      font-size: 0.92em;
+      padding: 7px 14px;
+    }
+    table.result-table .ours-row { background: #dceef5; }
+    table.result-table .ours-row td { font-weight: 600; }
+    .best { font-weight: 700; }
+    .cmark { color: #1e9e63; font-weight: 700; font-size: 1.05em; }
+    .xmark { color: #d34a4a; font-weight: 700; font-size: 1.05em; }
+
+    .section { padding-top: 1.5rem; }
+    .takeaway {
+      background: #f5f8fa;
+      border-left: 4px solid #0f6b8c;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-top: 1em;
+      text-align: justify;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Title / Hero -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+
+            <h1 class="title is-1 publication-title is-bold" style="margin-right: 30px; margin-left: 30px;">
+              Reinforcement Learning with Evolving Rubrics as Rewards for Audio Reasoning
+            </h1>
+
+            <!-- Authors -->
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://yu-fangxu.github.io/">Fangxu Yu</a><sup>1</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://ft2023.github.io/taofeng.github.io/">Tao Feng</a><sup>2</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://zhishanq.github.io/">Dehai Min</a><sup>3</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://zinanlin.me/">Zinan Lin</a><sup>4</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://xiaodongagi.github.io/">Xiaodong Liu</a><sup>4</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://weijia-xu.github.io/">Weijia Xu</a><sup>4</sup>,
+              </span><br>
+              <span class="author-block">
+                <a href="https://www.microsoft.com/en-us/research/people/michaelxu/">Michael Xu</a><sup>4</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://cs.uic.edu/profiles/philip-yu/">Philip S. Yu</a><sup>3</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://geliu.web.illinois.edu/">Ge Liu</a><sup>2</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://www.microsoft.com/en-us/research/people/jfgao/">Jianfeng Gao</a><sup>4</sup>,
+              </span>
+              <span class="author-block">
+                <a href="https://tianyizhou.github.io/">Tianyi Zhou</a><sup>5</sup>
+              </span>
+            </div>
+            <div class="is-size-5 publication-authors" style="margin-top:1em;">
+              <span class="author-block"><sup>1</sup>University of Maryland, College Park,</span>
+              <span class="author-block"><sup>2</sup>University of Illinois Urbana-Champaign,</span><br>
+              <span class="author-block"><sup>3</sup>University of Illinois Chicago,</span>
+              <span class="author-block"><sup>4</sup>Microsoft Research,</span>
+              <span class="author-block"><sup>5</sup>MBZUAI</span>
+            </div>
+
+            <!-- Links -->
+            <div class="column has-text-centered" style="margin-top:1.5em;">
+              <span class="link-block">
+                <a href="#" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="ai ai-arxiv"></i></span>
+                  <span>Paper</span>
+                </a>&nbsp;&nbsp;
+              </span>
+              <span class="link-block">
+                <a href="https://github.com/Yu-Fangxu/AudioRubrics" class="external-link button is-normal is-rounded is-dark" role="button" target="_blank">
+                  <span class="icon"><i class="fab fa-github"></i></span>
+                  <span>Code</span>
+                </a>&nbsp;&nbsp;
+              </span>
+              <span class="link-block">
+                <a href="https://huggingface.co/umd-zhou-lab/AudioRubrics"
+                   class="external-link button is-normal is-rounded is-dark" target="_blank">
+                  <span class="icon" style="display: flex; align-items: center; height: 100%;">
+                      <p style="font-size:18px; margin: 0;">&#129303;</p>
+                  </span>
+                  <span>Model Weights</span>
+                </a>&nbsp;&nbsp;
+              </span>
+              <span class="link-block">
+                <a href="https://huggingface.co/datasets/umd-zhou-lab/AVQA-Audio-Rubrics"
+                   class="external-link button is-normal is-rounded is-dark" target="_blank">
+                  <span class="icon" style="display: flex; align-items: center; height: 100%;">
+                      <p style="font-size:18px; margin: 0;">&#129303;</p>
+                  </span>
+                  <span>Dataset</span>
+                </a>
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Overview -->
+  <section class="section" id="overview" style="padding-top:1.5rem;">
+    <div class="container" style="max-width: 80%; margin: 0 auto;">
+      <h2 class="title is-3" style="text-align:center; margin-bottom:1rem; font-size: 2.3em;">Overview</h2>
+      <div class="content has-text-justified" style="max-width: 90%; font-size: 1.15em; margin: 0 auto; line-height: 1.55;">
+        <p style="text-align:justify;">
+          <b>Outcome-based rewards</b> supervise only the final answer, letting the model answer without attending to the audio.
+          <b>Process-based rewards</b> score the reasoning, but with coarse, hand-crafted, fixed criteria.
+          <b><span class="ours">AudioRubrics</span></b> instead rewards the reasoning process with <b>self-evolving, audio-grounded
+          rubrics</b>: per-sample rubrics are synthesized from the raw waveform, then regenerated and reweighted from the model's own
+          rollouts, so the reward keeps targeting the current policy's weaknesses.
+        </p>
+      </div>
+
+      <div style="max-width: 90%; margin: 0 auto; text-align: center;">
+        <figure class="table-figure" style="margin: 0;">
+          <img class="figure-image" src="website/img/motivation.png" alt="Motivation of AudioRubrics."
+               style="width: 100%; margin-bottom:1rem;"/>
+          <figcaption class="figure-caption" style="font-style: normal;">
+            <b>Figure 1.</b> Evolving rubrics push the reasoning from superficial guesses toward deep, faithful, and
+            evidence-grounded explanations.
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="table-card" style="max-width: 90%; margin: 1.5rem auto 0 auto;">
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Process<br>Supervision</th>
+              <th>Fine-grained<br>Criteria</th>
+              <th>Audio-<br>Grounded</th>
+              <th>Automatic<br>Generation</th>
+              <th>Evolve with<br>Policy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>R1-AQA</td><td class="xmark">✗</td><td class="xmark">✗</td><td class="xmark">✗</td><td class="xmark">✗</td><td class="xmark">✗</td></tr>
+            <tr><td>Omni-R1</td><td class="xmark">✗</td><td class="xmark">✗</td><td class="xmark">✗</td><td class="xmark">✗</td><td class="xmark">✗</td></tr>
+            <tr><td>Audio-Reasoner</td><td class="cmark">✓</td><td class="xmark">✗</td><td class="cmark">✓</td><td class="xmark">✗</td><td class="xmark">✗</td></tr>
+            <tr><td>Audio-Thinker</td><td class="cmark">✓</td><td class="xmark">✗</td><td class="xmark">✗</td><td class="cmark">✓</td><td class="xmark">✗</td></tr>
+            <tr><td>CESAR</td><td class="cmark">✓</td><td class="cmark">✓</td><td class="xmark">✗</td><td class="xmark">✗</td><td class="xmark">✗</td></tr>
+            <tr class="ours-row"><td><span class="ours">AudioRubrics</span></td><td class="cmark">✓</td><td class="cmark">✓</td><td class="cmark">✓</td><td class="cmark">✓</td><td class="cmark">✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="figure-caption" style="text-align:center; margin-top: 0.8rem; font-style: normal;">
+        <b>Table 1.</b> Comparison with existing post-training designs for audio reasoning.
+      </p>
+    </div>
+  </section>
+
+  <!-- Method -->
+  <section class="section" id="method" style="padding-top:1.5rem;">
+    <div class="container" style="max-width: 80%; margin: 0 auto;">
+      <h2 class="title is-3" style="text-align:center; margin-bottom: 2rem; font-size: 2.3em;">Method</h2>
+      <div style="max-width: 90%; margin: 0 auto; text-align: center;">
+        <figure class="table-figure" style="margin: 0 0 1rem 0;">
+          <img class="figure-image" src="website/img/main_arch.png" alt="Overview of AudioRubrics."
+               style="width: 100%; margin-bottom:1rem;"/>
+          <figcaption class="figure-caption" style="font-style: normal;">
+            <b>Figure 2.</b> Overview of <span class="ours">AudioRubrics</span>.
+          </figcaption>
+        </figure>
+      </div>
+      <div class="content has-text-justified" style="max-width: 90%; font-size: 1.15em; margin: 0 auto; line-height: 1.55;">
+        <p style="text-align:justify; margin-bottom: 0.6em;">
+          <b>(i) Audio-grounded initialization.</b> Rubrics are generated from the raw waveform, so every criterion is anchored in
+          the acoustic evidence actually present in the clip.
+        </p>
+        <p style="text-align:justify; margin-bottom: 0.6em;">
+          <b>(ii) Evolving rubrics.</b> At each step, saturated criteria are pruned and harder ones are elicited from the rollouts,
+          so the evaluation standard co-evolves with the policy.
+        </p>
+        <p style="text-align:justify; margin-bottom: 0.6em;">
+          <b>(iii) Overthinking penalty.</b> A linear length penalty counterbalances the rubric reward, keeping the reasoning
+          informative but concise.
+        </p>
+        <p style="text-align:center; margin-top: 1em;">
+          $R_i = R^{\text{out}}_i + \gamma\, R^{\text{rub}}_i + \delta\, R^{\text{over}}_i$
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Results -->
+  <section class="section" id="results" style="padding-top:1.5rem;">
+    <div class="container" style="max-width: 80%; margin: 0 auto;">
+      <h2 class="title is-3" style="text-align:center; margin-bottom: 2rem; font-size: 2.3em;">Main Results</h2>
+      <div class="content" style="max-width: 90%; font-size: 1.15em; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+        <p class="takeaway">
+          <b><span class="ours">AudioRubrics</span> achieves the best overall accuracy on all three benchmarks</b> among models of
+          similar size, and its <b>audio perception</b> improves tangibly: on the MMSU perception split it surpasses the best
+          comparable baseline by 4.3 points, an <b>8.9% relative improvement</b>.
+        </p>
+      </div>
+
+      <div class="table-card" style="max-width: 90%; margin: 0 auto;">
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>Models</th>
+              <th>MMAU Test-mini</th>
+              <th>MMAR</th>
+              <th>MMSU</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="section-label"><td colspan="4">Proprietary Models</td></tr>
+            <tr><td>GPT-4o-Audio</td><td>62.50</td><td>63.50</td><td>56.38</td></tr>
+            <tr><td>GPT-audio-1.5</td><td>74.90</td><td>72.00</td><td>63.40</td></tr>
+            <tr><td>Gemini-3-Flash</td><td>77.50</td><td>76.10</td><td>78.28</td></tr>
+            <tr><td>Gemini-3.1-Pro</td><td>77.60</td><td>77.50</td><td>82.60</td></tr>
+            <tr class="section-label"><td colspan="4">Open-source Models</td></tr>
+            <tr><td>Qwen2.5-Omni-7B</td><td>65.20</td><td>56.70</td><td>60.57</td></tr>
+            <tr><td>MiMo-Audio (7B)</td><td>74.90</td><td>56.70</td><td>55.18</td></tr>
+            <tr><td>Audio-Flamingo 3 (7B)</td><td>74.26</td><td>60.10</td><td>62.30</td></tr>
+            <tr class="section-label"><td colspan="4">Training-based Models</td></tr>
+            <tr><td>Omni-R1 (7B)</td><td>74.60</td><td>58.20</td><td>62.20</td></tr>
+            <tr><td>Ke-Omni-R (7B)</td><td>74.60</td><td>60.90</td><td>62.08</td></tr>
+            <tr><td>Audio-Thinker (7B)</td><td>73.70</td><td>65.30</td><td>--</td></tr>
+            <tr><td>CESAR (7B)</td><td>77.10</td><td>62.70</td><td>64.24</td></tr>
+            <tr class="ours-row"><td><span class="ours">AudioRubrics</span> (7B)</td><td class="best">78.00</td><td class="best">65.80</td><td class="best">65.86</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="figure-caption" style="text-align:center; margin-top: 0.8rem; font-style: normal;">
+        <b>Table 2.</b> Overall accuracy (%) on MMAU Test-mini, MMAR, and MMSU. See the paper for full per-dimension results
+        and additional baselines.
+      </p>
+    </div>
+  </section>
+
+  <!-- Analysis -->
+  <section class="section" id="analysis" style="padding-top:1.5rem;">
+    <div class="container" style="max-width: 80%; margin: 0 auto;">
+      <h2 class="title is-3" style="text-align:center; margin-bottom: 2rem; font-size: 2.3em;">Analysis</h2>
+      <div class="content has-text-justified" style="max-width: 90%; font-size: 1.15em; margin: 0 auto; line-height: 1.5;">
+
+        <p class="takeaway">
+          <b>1. A moderate rubric weight works best.</b> The rubric reward consistently improves over GRPO across the entire range,
+          peaking at $\gamma = 0.5$.
+        </p>
+        <p class="takeaway">
+          <b>2. The gains scale with the capability of the rubric generator and judge.</b> Replacing Gemini-3.1-Pro with the weaker
+          GPT-audio-1.5 drops performance below the GRPO baseline.
+        </p>
+        <div class="columns is-centered has-text-centered">
+          <div class="column">
+            <figure class="table-figure">
+              <img class="figure-image" src="website/img/combined_row.png" alt="Rubric weight and judge analysis."
+                   style="max-width: 90%; text-align:center; margin-bottom:0.5rem;"/>
+              <figcaption class="figure-caption" style="font-style: normal;">
+                <b>Figure 3.</b> (a) Impact of the rubric weight $\gamma$. (b, c) Accuracy and training dynamics with different
+                rubric generators and judges.
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <p class="takeaway">
+          <b>3. The rubric set keeps upgrading.</b> The share of newly evolved rubrics adopted for the reward grows from roughly
+          35% early in training to about 60% by the end.
+        </p>
+        <p class="takeaway">
+          <b>4. Stable reasoning length.</b> Vanilla GRPO collapses toward near-zero length, removing the length penalty leads to
+          unbounded growth, and the full method stays stable throughout.
+        </p>
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-half">
+            <figure class="table-figure">
+              <img class="figure-image" src="website/img/evolving_ratio.png" alt="Ratio of newly-evolved rubrics."
+                   style="max-width: 78%; text-align:center; margin-bottom:0.5rem;"/>
+              <figcaption class="figure-caption" style="font-style: normal;">
+                <b>Figure 4.</b> Ratio of newly-evolved rubrics adopted during training.
+              </figcaption>
+            </figure>
+          </div>
+          <div class="column is-half">
+            <figure class="table-figure">
+              <img class="figure-image" src="website/img/response_length.png" alt="Response length dynamics."
+                   style="max-width: 88%; text-align:center; margin-bottom:0.5rem;"/>
+              <figcaption class="figure-caption" style="font-style: normal;">
+                <b>Figure 5.</b> Response length during training under three reward configurations.
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- BibTeX -->
+  <section class="section" id="BibTeX" style="padding-top:1.5rem;">
+    <div class="container is-max-desktop content" style="max-width: 80%; margin: 0 auto;">
+      <h2 class="title is-3" style="text-align:center; font-size: 2.3em;">BibTeX</h2>
+      <pre style="font-size: 1.0em;">
+@article{yu2026audiorubrics,
+  title={Reinforcement Learning with Evolving Rubrics as Rewards for Audio Reasoning},
+  author={Yu, Fangxu and Feng, Tao and Min, Dehai and Lin, Zinan and Liu, Xiaodong and Xu, Weijia and Xu, Michael and Yu, Philip S. and Liu, Ge and Gao, Jianfeng and Zhou, Tianyi},
+  year={2026}
+}
+      </pre>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="columns is-centered">
+      <div class="column is-9">
+        <div class="content">
+          <p style="font-size: 1.15em; text-align:center;">
+            This website is adapted from
+            <a href="https://nerfies.github.io/" style="text-decoration: none;">Nerfies</a>, licensed under a
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" style="text-decoration: none;">
+              Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
